@@ -16,18 +16,42 @@
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/jest/bin/jest --runInBand",
-    "test:e2e": "jest --config ./test/jest-e2e.json"
+    "test:e2e": "jest --config ./test/jest-e2e.json",
+    "db:seed": "ts-node src/database/seeds/run-seeds.ts",
+    "typeorm": "typeorm-ts-node-commonjs",
+    "migration:generate": "npm run typeorm -- migration:generate -d src/config/typeorm-cli.config.ts",
+    "migration:run": "npm run typeorm -- migration:run -d src/config/typeorm-cli.config.ts",
+    "migration:revert": "npm run typeorm -- migration:revert -d src/config/typeorm-cli.config.ts"
   },
   "engines": {
     "npm": ">=10.0.0",
     "node": ">=20.0.0"
   },
   "dependencies": {
+    "@nestjs-modules/ioredis": "^2.0.2",
+    "@nestjs/apollo": "^13.1.0",
     "@nestjs/common": "^11.0.17",
+    "@nestjs/config": "^4.0.2",
     "@nestjs/core": "^11.0.1",
+    "@nestjs/graphql": "^13.1.0",
+    "@nestjs/jwt": "^11.0.0",
+    "@nestjs/passport": "^11.0.5",
     "@nestjs/platform-express": "^11.0.1",
+    "@nestjs/schedule": "^6.0.0",
+    "@nestjs/throttler": "^6.4.0",
+    "@nestjs/typeorm": "^11.0.0",
+    "argon2": "^0.44.0",
+    "class-transformer": "^0.5.1",
+    "class-validator": "^0.14.2",
+    "compression": "^1.8.1",
+    "cookie-parser": "^1.4.7",
+    "graphql": "^16.11.0",
+    "helmet": "^8.1.0",
+    "passport-jwt": "^4.0.1",
+    "pg": "^8.16.3",
     "reflect-metadata": "^0.2.2",
-    "rxjs": "^7.8.1"
+    "rxjs": "^7.8.1",
+    "typeorm": "^0.3.26"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3.2.0",
