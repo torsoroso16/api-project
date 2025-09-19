@@ -1,9 +1,6 @@
 import { ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
-import { setupPipes } from './core/setup/pipes.setup';
-import { setupCors } from './core/setup/cors.setup';
-// import { setupUpload } from './core/setup/upload.setup';
 import * as cookieParser from 'cookie-parser';
 import * as compression from 'compression';
 import helmet from 'helmet';
@@ -33,10 +30,31 @@ async function bootstrap() {
   app.use(cookieParser.default());
 
   // CORS
-  setupCors(app);
+  app.enableCors({
+    origin: process.env.FRONTEND_URL || 'http://localhost:3000',
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: [
+      'Origin',
+      'X-Requested-With',
+      'Content-Type',
+      'Accept',
+      'Authorization',
+      'apollo-require-preflight',
+    ],
+  });
 
   // Global validation pipe
-  setupPipes(app);
+  app.useGlobalPipes(
+    new ValidationPipe({
+      whitelist: true,
+      forbidNonWhitelisted: true,
+      transform: true,
+      transformOptions: {
+        enableImplicitConversion: true,
+      },
+    }),
+  );
 
   const PORT = process.env.PORT || 4000;
   await app.listen(PORT);

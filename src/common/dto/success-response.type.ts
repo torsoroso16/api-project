@@ -8,4 +8,3 @@ export class SuccessResponse {
   @Field()
   message: string;
 }
-    
