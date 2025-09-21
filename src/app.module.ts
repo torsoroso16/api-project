@@ -20,7 +20,7 @@ import { AllExceptionsFilter } from './shared/exceptions/all-exceptions.filter';
 // Feature Modules
 import { UsersModule } from './modules/users/users.module';
 import { ProductsModule } from './modules/products/products.module';
-// import { OrdersModule } from './modules/orders/orders.module';
+import { OrdersModule } from './modules/orders/orders.module';
 // import { SettingsModule } from './modules/settings/settings.module';
 // ...import modules lain
 
@@ -55,7 +55,7 @@ import { ProductsModule } from './modules/products/products.module';
     // Domain Modules
     UsersModule,
     ProductsModule,
-    // OrdersModule,
+    OrdersModule,
     // SettingsModule,
     // ...module lain
   ],

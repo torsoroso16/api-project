@@ -1,144 +1,175 @@
 import {
-  ObjectType,
-  Field,
-  Int,
-  registerEnumType,
-  ID,
-  InputType,
-  createUnionType,
-} from '@nestjs/graphql';
-import { AttributeValue } from 'src/attributes/entities/attribute-value.entity';
-import { Category } from 'src/categories/entities/category.entity';
-import { Attachment } from 'src/common/entities/attachment.entity';
-import { CoreEntity } from 'src/common/entities/core.entity';
-import { Order } from 'src/orders/entities/order.entity';
-import { Shop } from 'src/shops/entities/shop.entity';
-import { Tag } from 'src/tags/entities/tag.entity';
-import { Type } from 'src/types/entities/type.entity';
-import { Type as TypeTransformer } from 'class-transformer';
-import { Author } from '../../authors/entities/author.entity';
-import { Manufacturer } from '../../manufacturers/entities/manufacturer.entity';
-import { Review } from '../../reviews/entities/review.entity';
-import { Variation } from './variation.entity';
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  CreateDateColumn,
+  UpdateDateColumn,
+  OneToMany,
+  Index,
+} from 'typeorm';
+import { ProductStatus, ProductType } from '../../../core/entities/product.entity';
 
-enum ProductStatus {
-  PUBLISH = 'publish',
-  DRAFT = 'draft',
-}
+@Entity('products')
+@Index(['status', 'inStock'])
+@Index(['shopId', 'status'])
+@Index(['slug'], { unique: true })
+export class ProductEntity {
+  @PrimaryGeneratedColumn()
+  id: number;
 
-enum ProductType {
-  SIMPLE = 'simple',
-  VARIABLE = 'variable',
-}
-
-registerEnumType(ProductStatus, { name: 'ProductStatus' });
-registerEnumType(ProductType, { name: 'ProductType' });
-
-export const FileableUnion = createUnionType({
-  name: 'FileableUnion',
-  types: () => [Product, Variation],
-  resolveType: (value) => {
-    if (value.name) {
-      return Product;
-    }
-
-    if (value.title) {
-      return Variation;
-    }
-
-    return null;
-  },
-});
-
-// @InputType('DigitalFileInputType', { isAbstract: true })
-@ObjectType()
-export class DigitalFile extends CoreEntity {
-  @Field(() => Int)
-  attachment_id: number;
-  @Field(() => FileableUnion, { nullable: true })
-  fileable?: Product | Variation;
-  // fileable?: Product;
-  url: string;
-}
-
-@InputType('ProductInputType', { isAbstract: true })
-@ObjectType()
-export class Product extends CoreEntity {
+  @Column()
   name: string;
+
+  @Column({ unique: true })
   slug: string;
-  type?: Type;
-  @Field(() => ID)
-  type_id: number;
-  product_type: ProductType;
-  categories?: Category[];
-  tags?: Tag[];
-  variations?: AttributeValue[];
-  variation_options?: Variation[];
-  pivot?: OrderProductPivot;
-  orders?: Order[];
-  @TypeTransformer(() => Shop)
-  shop?: Shop;
-  author?: Author;
-  manufacturer?: Manufacturer;
-  @Field(() => ID)
-  shop_id?: number;
-  @Field(() => ID)
-  author_id?: number;
-  @Field(() => ID)
-  manufacturer_id?: number;
-  related_products?: Product[];
+
+  @Column('text', { nullable: true })
   description?: string;
-  in_stock?: boolean;
-  is_taxable?: boolean;
-  is_digital?: boolean;
-  is_external?: boolean;
-  external_product_url?: string;
-  external_product_button_text?: string;
-  sale_price?: number;
-  max_price?: number;
-  min_price?: number;
-  sku?: string;
-  gallery?: Attachment[];
-  image?: Attachment;
-  status: ProductStatus;
-  height?: string;
-  length?: string;
-  width?: string;
+
+  @Column({ name: 'type_id', nullable: true })
+  typeId?: number;
+
+  @Column({ name: 'shop_id', nullable: true })
+  shopId?: number;
+
+  @Column({ name: 'author_id', nullable: true })
+  authorId?: number;
+
+  @Column({ name: 'manufacturer_id', nullable: true })
+  manufacturerId?: number;
+
+  @Column({
+    type: 'enum',
+    enum: ProductType,
+    default: ProductType.SIMPLE,
+    name: 'product_type',
+  })
+  productType: ProductType;
+
+  @Column('decimal', { precision: 10, scale: 2, nullable: true })
   price?: number;
-  @Field(() => Int)
+
+  @Column('decimal', { precision: 10, scale: 2, nullable: true, name: 'sale_price' })
+  salePrice?: number;
+
+  @Column('decimal', { precision: 10, scale: 2, nullable: true, name: 'max_price' })
+  maxPrice?: number;
+
+  @Column('decimal', { precision: 10, scale: 2, nullable: true, name: 'min_price' })
+  minPrice?: number;
+
+  @Column({ nullable: true })
+  sku?: string;
+
+  @Column('int', { default: 0 })
   quantity: number;
-  unit: string;
+
+  @Column('int', { default: 0, name: 'sold_quantity' })
+  soldQuantity: number;
+
+  @Column({ nullable: true })
+  unit?: string;
+
+  @Column({
+    type: 'enum',
+    enum: ProductStatus,
+    default: ProductStatus.DRAFT,
+  })
+  status: ProductStatus;
+
+  @Column({ default: true, name: 'in_stock' })
+  inStock: boolean;
+
+  @Column({ default: false, name: 'is_taxable' })
+  isTaxable: boolean;
+
+  @Column({ default: false, name: 'is_digital' })
+  isDigital: boolean;
+
+  @Column({ default: false, name: 'is_external' })
+  isExternal: boolean;
+
+  @Column({ nullable: true, name: 'external_product_url' })
+  externalProductUrl?: string;
+
+  @Column({ nullable: true, name: 'external_product_button_text' })
+  externalProductButtonText?: string;
+
+  @Column({ nullable: true })
+  height?: string;
+
+  @Column({ nullable: true })
+  length?: string;
+
+  @Column({ nullable: true })
+  width?: string;
+
+  @Column('jsonb', { nullable: true })
+  image?: {
+    id?: number;
+    thumbnail?: string;
+    original?: string;
+    fileName?: string;
+  };
+
+  @Column('jsonb', { nullable: true })
+  gallery?: Array<{
+    id?: number;
+    thumbnail?: string;
+    original?: string;
+    fileName?: string;
+  }>;
+
+  @Column('jsonb', { nullable: true })
+  videos?: Array<{
+    url: string;
+  }>;
+
+  @Column('decimal', { precision: 3, scale: 2, nullable: true })
   ratings?: number;
-  in_wishlist: boolean;
-  my_review?: Review[];
-  @Field(() => [Video], { nullable: true })
-  video?: Video[];
-  @Field(() => Int)
-  in_flash_sale?: number;
-  @Field(() => Int)
-  sold_quantity?: number;
+
+  @Column('int', { nullable: true, name: 'in_flash_sale' })
+  inFlashSale?: number;
+
+  @Column({ nullable: true })
   language?: string;
-  translated_languages?: string[];
-}
 
-@InputType('PivotInputType', { isAbstract: true })
-@ObjectType()
-export class OrderProductPivot {
-  @Field(() => ID)
-  variation_option_id?: number;
-  @Field(() => Int)
-  order_quantity: number;
-  unit_price: number;
-  subtotal: number;
-}
+  @Column('text', { array: true, nullable: true, name: 'translated_languages' })
+  translatedLanguages?: string[];
 
-@InputType('VideoInputType', { isAbstract: true })
-@ObjectType()
-export class Video {
-  url: string;
-}
-@InputType('AudioInputType', { isAbstract: true })
-@ObjectType()
-export class Audio {
-  url: string;
+  @CreateDateColumn({ name: 'created_at' })
+  createdAt: Date;
+
+  @UpdateDateColumn({ name: 'updated_at' })
+  updatedAt: Date;
+
+  // Relations - use string references to avoid circular imports
+  @OneToMany('ProductVariationEntity', 'product')
+  variations?: any[];
+
+  @OneToMany('WishlistEntity', 'product')
+  wishlists?: any[];
+
+  @OneToMany('ProductCategoryEntity', 'product')
+  productCategories?: any[];
+
+  @OneToMany('ProductTagEntity', 'product')
+  productTags?: any[];
+
+  // These relations would be added when we have the other entities
+  // @ManyToOne(() => TypeEntity, { nullable: true })
+  // @JoinColumn({ name: 'type_id' })
+  // type?: TypeEntity;
+
+  // @ManyToOne(() => ShopEntity, { nullable: true })  
+  // @JoinColumn({ name: 'shop_id' })
+  // shop?: ShopEntity;
+
+  // @ManyToOne(() => AuthorEntity, { nullable: true })
+  // @JoinColumn({ name: 'author_id' })
+  // author?: AuthorEntity;
+
+  // @ManyToOne(() => ManufacturerEntity, { nullable: true })
+  // @JoinColumn({ name: 'manufacturer_id' })
+  // manufacturer?: ManufacturerEntity;
 }

@@ -16,6 +16,7 @@ import { ProfileService } from './services/profile.service';
 // Repositories
 import { UserRepository } from './repositories/user.repository';
 import { ProfileRepository } from './repositories/profile.repository';
+import { RoleRepository } from '../auth/repositories/role.repository';
 
 // Shared modules
 import { SharedModule } from '../../shared/shared.module';
@@ -44,11 +45,16 @@ import { AuthModule } from '../auth/auth.module';
       provide: 'ProfileRepositoryInterface',
       useClass: ProfileRepository,
     },
+    {
+      provide: 'RoleRepositoryInterface',
+      useClass: RoleRepository,
+    },
   ],
   exports: [
     UsersService,
     'UserRepositoryInterface',
     'ProfileRepositoryInterface',
+    'RoleRepositoryInterface',
   ],
 })
 export class UsersModule {}
